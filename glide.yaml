@@ -1,4 +1,4 @@
-package: github.com/brentpabst/gocam
+package: github.com/brentpabst/wxcam
 import:
 - package: github.com/alecthomas/kingpin
   version: ~2.2.4
