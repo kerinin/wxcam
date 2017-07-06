@@ -1,0 +1,12 @@
+[Unit]
+Description=Weather Camera
+After=network.target
+
+[Service]
+Type=notify
+ExecStart=/usr/bin/wxcam --file-folder=/tmp/wxcam --aws-id=YOURID  --aws-secret=YOURSECRET  --s3-bucket=YOURBUCKET
+WatchdogSec=30s
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
