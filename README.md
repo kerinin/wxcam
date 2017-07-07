@@ -1,5 +1,9 @@
 # Weather Camera
 
+| ARM Build | License |
+| ----------- | ------- |
+| [![Build Status](https://img.shields.io/travis/brentpabst/wxcam.svg)](https://travis-ci.org/brentpabst/wxcam) | [![license](https://img.shields.io/github/license/brentpabst/wxcam.svg)](LICENSE) |
+
 wxcam is a Go-based app designed to run on a Raspberry Pi.  While it is built for taking weather oriented-pictures and uploading them to AWS this app could be used to take automated pictures of pretty much anything.
 
 ## Getting Started
