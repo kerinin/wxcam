@@ -1,16 +1,25 @@
 language: go
 go:
-- master
+- 1.8.x
 before_install:
-  - GLIDE_OS_ARCH=`go env GOHOSTOS`-`go env GOHOSTARCH`
-  - GLIDE_TAG=$(curl -s https://glide.sh/version)
-  - GLIDE_LATEST_RELEASE_URL="https://github.com/Masterminds/glide/releases/download/${GLIDE_TAG}/glide-${GLIDE_TAG}-${GLIDE_OS_ARCH}.tar.gz"
-  - wget ${GLIDE_LATEST_RELEASE_URL} -O /tmp/glide.tar.gz
-  - mkdir /tmp/glide
-  - tar --directory=/tmp/glide -xvf /tmp/glide.tar.gz
-  - export PATH=$PATH:/tmp/glide/${GLIDE_OS_ARCH}
+- GLIDE_OS_ARCH=`go env GOHOSTOS`-`go env GOHOSTARCH`
+- GLIDE_TAG=$(curl -s https://glide.sh/version)
+- GLIDE_LATEST_RELEASE_URL="https://github.com/Masterminds/glide/releases/download/${GLIDE_TAG}/glide-${GLIDE_TAG}-${GLIDE_OS_ARCH}.tar.gz"
+- wget ${GLIDE_LATEST_RELEASE_URL} -O /tmp/glide.tar.gz
+- mkdir /tmp/glide
+- tar --directory=/tmp/glide -xvf /tmp/glide.tar.gz
+- export PATH=$PATH:/tmp/glide/${GLIDE_OS_ARCH}
 install:
 - mkdir -p $GOPATH/bin
 - glide install
 script:
 - env GOOS=linux GOARCH=arm go build
+before_deploy:
+- tar -czf wxcam-$TRAVIS_BRANCH.tar.gz wxcam wxcam.service
+deploy:
+  provider: releases
+  api_key:
+    secure: BAZxdTAaS0tWqI2EcRZDMtx0/BAexXgUVSkQ40UHISd1R+F5Ge4pjAfaOmiJV1uz6EXDd95/C0DNPS1Pp6A9Ps7kG1V2Y8awxkjQ6ExSDWpsdQZ00GVnu5BvR+lxHTdraFXJyybnzbQUGHWTZ4hBHMQ7QcbJSn5OYPIXU78GBLkPhmKa7DP8yMpcAB3auQG0ZlL/Y1ns9c4vd0O24z5wqGouYNyLdsldmnMWl4Z8fNNyxpIBLiUXf8vumy2M7GSPKyYsTsTIkiRmKV1jWAdxY+rSPpygPXowZhdWTxmI0Alv54akN7cABbFyfMx006gyII0xBkkcgPk7Kt2ngIzI9ODUKk6yrDzZypcs1Fv8uMkUaN5NV0ewJAD6x6rHJFb9Oh0wq5k9M8ahpSjHkzo86JS09yqlv2roKJQIVzVY5pp4zvObOCjP8EhrM10oA19N/isBC10OuKZLsm3sAf0VwULdhbmwXeMPyY2o+LZsch2qdPBDc9k57MctNKLG8Ev/Qy1uiRXSkuu91A+Mm/CeCzdsRIg25TiUFUlkuPLvVBup/IDemhqh6uKKbFHgPupqx2VpualvQbhUAH0UU/cjd1iU5IT5J6fvrv2MycPfaLE0ZsrjrjWfB7niCEF3wdqA1Tww0W8KN4C/aKC7qOTlmw+75LtEKr5BXGH0iqT5vW4=
+  file: wxcam-$TRAVIS_BRANCH.tar.gz
+  on:
+    tags: true
