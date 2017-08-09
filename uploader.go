@@ -63,7 +63,7 @@ func uploader() {
 		// Build upload params
 		params := &s3manager.UploadInput{
 			Bucket: aws.String(*s3Bucket),
-			Key:    aws.String("wxcam.jpg"),
+			Key:    aws.String(files[i].Name()),
 			Body:   file,
 		}
 
