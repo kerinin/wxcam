@@ -2,28 +2,35 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 )
 
-func cam() {
-	log.Info("Taking a picture")
+// Cam takes pictures
+type Cam struct {
+	FileFolder string
+	FilePrefix string
+}
 
-	// Check if the folder exists
-	if _, err := os.Stat(*fileFolder); os.IsNotExist(err) {
-		os.MkdirAll(*fileFolder, 0777)
-	}
-
+// Capture ...
+func (c *Cam) Capture() {
 	// Grab current UTC time
 	now := time.Now()
 
+	// Check if the folder exists
+	if _, err := os.Stat(c.FileFolder); os.IsNotExist(err) {
+		os.MkdirAll(c.FileFolder, 0777)
+	}
+
 	// Build the filename
-	fileName := *fileFolder + "/" + *filePrefix + "-" + now.Format(fileDateFormat) + ".jpg"
+	// TODO: Raw format
+	fileName := filepath.Join(c.FileFolder, c.FilePrefix+"-"+now.Format(fileDateFormat)+".jpg")
 
 	// Execute the command against the OS
 
+	// TODO: raspiyuv
 	cmd := exec.Command("raspistill", "-vf", "-hf", "-a", "1024", "-a", "8", "-a", "github.com/brentpabst/wxcam | %F %r", "-o", fileName)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
@@ -31,7 +38,7 @@ func cam() {
 	err := cmd.Run()
 	// Check for errors
 	if err != nil {
-		log.Fatal(fmt.Sprint(err) + ": " + stderr.String())
+		log.Fatalf("Failed to execute capture command: %s", err)
 	}
 
 	log.Info("Took a picture: " + fileName)

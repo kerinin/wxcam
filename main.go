@@ -32,10 +32,21 @@ func main() {
 
 	kingpin.Parse()
 
+	uploader := Uploader{
+		S3Region:   *s3Region,
+		AwsID:      *awsID,
+		AwsSecret:  *awsSecret,
+		FileFolder: *fileFolder,
+	}
+	cam := Cam{
+		FileFolder: *fileFolder,
+		FilePrefix: *filePrefix,
+	}
+
 	c := cron.New()
 
-	c.AddFunc(*cronPhotographer, cam)
-	c.AddFunc(*cronUploader, uploader)
+	c.AddFunc(*cronPhotographer, cam.Capture)
+	c.AddFunc(*cronUploader, uploader.Upload)
 	c.AddFunc("@every 15s", func() { daemon.SdNotify(false, "WATCHDOG=1") })
 
 	var wg sync.WaitGroup

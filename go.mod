@@ -9,6 +9,7 @@ require (
 	github.com/coreos/go-systemd v0.0.0-20161114122254-48702e0da86b
 	github.com/go-ini/ini v1.26.0
 	github.com/jmespath/go-jmespath v0.0.0-20160803190731-bd40a432e4c7
+	github.com/pkg/errors v0.8.1
 	github.com/robfig/cron v1.0.0
 	golang.org/x/sys v0.0.0-20161214190518-d75a52659825
 )
