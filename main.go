@@ -9,6 +9,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/alecthomas/kingpin"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/coreos/go-systemd/daemon"
 	"github.com/robfig/cron"
 )
@@ -32,12 +34,14 @@ func main() {
 
 	kingpin.Parse()
 
-	uploader := Uploader{
-		S3Region:   *s3Region,
-		AwsID:      *awsID,
-		AwsSecret:  *awsSecret,
-		FileFolder: *fileFolder,
-	}
+	uploader := NewUploader(
+		&aws.Config{
+			Region:      aws.String(*s3Region),
+			Credentials: credentials.NewStaticCredentials(*awsID, *awsSecret, ""),
+		},
+		*fileFolder,
+	)
+
 	cam := Cam{
 		FileFolder: *fileFolder,
 		FilePrefix: *filePrefix,

@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/pkg/errors"
@@ -16,19 +15,28 @@ import (
 
 // Uploader uploads files to S3
 type Uploader struct {
-	S3Region   string
-	AwsID      string
-	AwsSecret  string
-	FileFolder string
+	s3Config   *aws.Config
+	fileFolder string
+	sem        chan struct{}
 }
 
-// Upload ...
+// NewUploader returns a new uploader
+func NewUploader(s3Config *aws.Config, fileFolder string) *Uploader {
+	return &Uploader{
+		s3Config:   s3Config,
+		fileFolder: fileFolder,
+		sem:        make(chan struct{}, 1),
+	}
+}
+
+// Upload uploads any files in the target folder to S3, deleting them after successful uploads
 func (u *Uploader) Upload() {
+	// Lock the semaphore to prevent concurrent upload attempts
+	u.sem <- struct{}{}
+	defer func() { <-u.sem }()
+
 	// Build AWS Session Object
-	s, err := session.NewSession(&aws.Config{
-		Region:      aws.String(u.S3Region),
-		Credentials: credentials.NewStaticCredentials(u.AwsID, u.AwsSecret, ""),
-	})
+	s, err := session.NewSession(u.s3Config)
 
 	// Check for errors connecting to AWS, stop if so
 	if err != nil {
@@ -36,7 +44,7 @@ func (u *Uploader) Upload() {
 	}
 
 	// Load list of files to upload
-	files, err := ioutil.ReadDir(u.FileFolder)
+	files, err := ioutil.ReadDir(u.fileFolder)
 
 	// Check for error getting files
 	if err != nil {
@@ -67,7 +75,7 @@ func (u *Uploader) Upload() {
 
 func (u *Uploader) uploadFile(uploader *s3manager.Uploader, fileInfo os.FileInfo) error {
 	// Open the file
-	file, err := os.Open(filepath.Join(u.FileFolder, fileInfo.Name()))
+	file, err := os.Open(filepath.Join(u.fileFolder, fileInfo.Name()))
 
 	// Check for read errors
 	if err != nil {
@@ -87,10 +95,10 @@ func (u *Uploader) uploadFile(uploader *s3manager.Uploader, fileInfo os.FileInfo
 	if err != nil {
 		return errors.Wrap(err, "uploading file")
 	}
-	log.Info("Uploaded file: %s", fileInfo.Name())
+	log.Infof("Uploaded file: %s", fileInfo.Name())
 
 	// Delete files
-	err = os.Remove(filepath.Join(u.FileFolder, file.Name()))
+	err = os.Remove(filepath.Join(u.fileFolder, file.Name()))
 	if err != nil {
 		return errors.Wrap(err, "removing file")
 	}
